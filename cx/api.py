@@ -1,14 +1,22 @@
-"""OpenAI-compatible chat client (stdlib only) with SSE streaming + tool calls."""
+"""Klien chat OpenAI-compatible (stdlib): streaming SSE, tool call, dan toleran terhadap proxy yang 'aneh'."""
 import json
+import re
 import ssl
 import time
 import urllib.error
 import urllib.request
-import uuid
+
+from . import log, wire
+
+CONV_KEYS = ("conversation_id", "chat_id", "session_id", "thread_id")
+_THINK = re.compile(r"<think>.*?</think>\s*", re.S)
 
 
 class ApiError(Exception):
-    pass
+    def __init__(self, msg, status=None, body=""):
+        super().__init__(msg)
+        self.status = status
+        self.body = body
 
 
 def _ctx(cfg):
@@ -26,7 +34,7 @@ def _open(cfg, key, path, payload=None, conv_id=None, timeout=600):
     req = urllib.request.Request(url, data=data, method="POST" if data is not None else "GET")
     req.add_header("Authorization", "Bearer " + key)
     req.add_header("Content-Type", "application/json")
-    req.add_header("User-Agent", "CodinX/1.0")
+    req.add_header("User-Agent", "CodinX/1.1")
     if conv_id:
         req.add_header("X-Conversation-Id", conv_id)
     if payload and payload.get("stream"):
@@ -39,44 +47,51 @@ def list_models(cfg, key):
         with _open(cfg, key, "/models", timeout=20) as r:
             d = json.loads(r.read().decode())
     except urllib.error.HTTPError as e:
-        raise ApiError(f"HTTP {e.code}: {e.read().decode(errors='replace')[:300]}")
+        body = e.read().decode(errors="replace")[:300]
+        raise ApiError(f"HTTP {e.code}: {body}", e.code, body)
     except Exception as e:
-        raise ApiError(str(e))
+        raise ApiError(str(getattr(e, "reason", e)))
     items = d.get("data", d) if isinstance(d, dict) else d
     ids = [(m.get("id") if isinstance(m, dict) else str(m)) for m in items]
     return sorted(i for i in ids if i)
 
 
-def chat(cfg, key, messages, tools=None, on_text=None, on_reasoning=None, conv_id=None):
-    """Returns (assistant_message, usage). Message is {'role','content','tool_calls'?}."""
-    payload = {"model": cfg["model"], "messages": messages, "stream": True,
-               "stream_options": {"include_usage": True}}
+def chat(cfg, key, messages, tools=None, on_text=None, on_reasoning=None, conv_id=None, timeout=600):
+    """-> (assistant_message, usage, meta).  meta = {'id': id respons pertama, 'conv': id percakapan dari server}."""
+    field = cfg.get("conv_field") or ""
+    payload = {"model": cfg["model"], "messages": messages, "stream": True, "stream_options": {"include_usage": True}}
     if conv_id:
         payload["user"] = conv_id
+        if field:
+            payload[field] = conv_id
     if tools:
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
     if cfg.get("temperature") is not None:
         payload["temperature"] = cfg["temperature"]
 
-    resp = None
-    last = ""
+    log.debug("http_request", url=cfg["base_url"], model=cfg["model"], messages=len(messages), tools=bool(tools),
+              conv=bool(conv_id), conv_field=field or None)
+    resp, last, stripped = None, "", False
     for attempt in range(4):
         try:
-            resp = _open(cfg, key, "/chat/completions", payload, conv_id)
+            resp = _open(cfg, key, "/chat/completions", payload, conv_id, timeout)
             break
         except urllib.error.HTTPError as e:
-            body = e.read().decode(errors="replace")[:600]
+            body = e.read().decode(errors="replace")[:800]
             last = f"HTTP {e.code}: {body}"
-            if e.code == 400 and ("stream_options" in payload or "user" in payload):
-                payload.pop("stream_options", None)
-                payload.pop("user", None)
+            if e.code in (400, 422) and not stripped and any(k and k in payload for k in ("stream_options", "user", field)):
+                stripped = True                      # buang field opsional yang mungkin ditolak, coba sekali lagi
+                for k in ("stream_options", "user", field):
+                    if k:
+                        payload.pop(k, None)
                 continue
             if e.code in (429, 500, 502, 503, 504) and attempt < 3:
                 time.sleep(2 ** attempt)
                 continue
-            raise ApiError(last)
-        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
+            log.debug("http_error", status=e.code, body=body[:300])
+            raise ApiError(last, e.code, body)
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError) as e:
             last = str(getattr(e, "reason", e))
             if attempt < 3:
                 time.sleep(2 ** attempt)
@@ -86,17 +101,50 @@ def chat(cfg, key, messages, tools=None, on_text=None, on_reasoning=None, conv_i
         raise ApiError(last or "request gagal")
 
     content, calls, usage = [], {}, None
-    ctype = resp.headers.get("Content-Type", "")
+    meta = {"id": None, "conv": None}
+
+    def note_meta(obj):
+        if isinstance(obj, dict):
+            if not meta["id"] and obj.get("id"):
+                meta["id"] = str(obj["id"])
+            for k in ((field,) if field else ()) + CONV_KEYS:
+                if k and obj.get(k) and not meta["conv"]:
+                    meta["conv"] = str(obj[k])
+
+    def take(d):
+        t = d.get("content")
+        if isinstance(t, list):                        # content berupa array bagian
+            t = "".join(p.get("text", "") for p in t if isinstance(p, dict))
+        if t is None:
+            t = d.get("text")
+        if t:
+            content.append(t)
+            if on_text:
+                on_text(t)
+        r = d.get("reasoning_content") or d.get("reasoning")
+        if r and on_reasoning:
+            on_reasoning(r)
+        for tc in d.get("tool_calls") or []:
+            idx = tc.get("index")
+            if idx is None:
+                idx = (max(calls) + (1 if tc.get("id") else 0)) if calls else 0
+            cur = calls.setdefault(idx, {"name": "", "args": ""})
+            fn = tc.get("function") or {}
+            nm = fn.get("name")
+            if nm and nm != cur["name"]:
+                cur["name"] = nm if not cur["name"] else cur["name"] + nm
+            a = fn.get("arguments")
+            if a not in (None, ""):
+                cur["args"] += json.dumps(a, ensure_ascii=False) if isinstance(a, (dict, list)) else a
+
     with resp:
-        if "event-stream" not in ctype:      # proxy tanpa streaming
+        if "event-stream" not in resp.headers.get("Content-Type", ""):      # proxy tanpa streaming
             obj = json.loads(resp.read().decode())
-            msg = obj["choices"][0]["message"]
-            if msg.get("content"):
-                content.append(msg["content"])
-                if on_text:
-                    on_text(msg["content"])
-            for i, tc in enumerate(msg.get("tool_calls") or []):
-                calls[i] = {"id": tc.get("id"), "name": tc["function"]["name"], "args": tc["function"].get("arguments", "")}
+            if isinstance(obj, dict) and obj.get("error") and not obj.get("choices"):
+                raise ApiError(str(obj["error"])[:400])
+            note_meta(obj)
+            ch = (obj.get("choices") or [{}])[0]
+            take(ch.get("message") or {"text": ch.get("text")})
             usage = obj.get("usage")
         else:
             for raw in resp:
@@ -110,42 +158,28 @@ def chat(cfg, key, messages, tools=None, on_text=None, on_reasoning=None, conv_i
                     ev = json.loads(d)
                 except ValueError:
                     continue
-                if ev.get("error"):
+                if ev.get("error") and not ev.get("choices"):
                     raise ApiError(str(ev["error"])[:400])
+                note_meta(ev)
                 if ev.get("usage"):
                     usage = ev["usage"]
                 for ch in ev.get("choices") or []:
-                    delta = ch.get("delta") or {}
-                    r = delta.get("reasoning_content") or delta.get("reasoning")
-                    if r and on_reasoning:
-                        on_reasoning(r)
-                    t = delta.get("content")
-                    if t:
-                        content.append(t)
-                        if on_text:
-                            on_text(t)
-                    for tc in delta.get("tool_calls") or []:
-                        idx = tc.get("index")
-                        if idx is None:
-                            idx = (max(calls) + (1 if tc.get("id") else 0)) if calls else 0
-                        cur = calls.setdefault(idx, {"id": None, "name": "", "args": ""})
-                        if tc.get("id"):
-                            cur["id"] = tc["id"]
-                        fn = tc.get("function") or {}
-                        if fn.get("name"):
-                            cur["name"] += fn["name"]
-                        if fn.get("arguments"):
-                            cur["args"] += fn["arguments"]
+                    delta = ch.get("delta")
+                    if delta is None and ch.get("message") and not content and not calls:
+                        delta = ch["message"]               # beberapa proxy memakai 'message' di chunk akhir
+                    if delta is None and ch.get("text"):
+                        delta = {"text": ch["text"]}
+                    take(delta or {})
 
-    msg = {"role": "assistant", "content": "".join(content)}
+    text = _THINK.sub("", "".join(content))
+    msg = {"role": "assistant", "content": text}
     if calls:
-        msg["tool_calls"] = [
-            {"id": c["id"] or "call_" + uuid.uuid4().hex[:12], "type": "function",
-             "function": {"name": c["name"], "arguments": c["args"] or "{}"}}
-            for _, c in sorted(calls.items())
-        ]
+        msg["tool_calls"] = [{"id": wire.new_call_id(), "type": "function",
+                              "function": {"name": c["name"], "arguments": wire.fix_args(c["args"])}}
+                             for _, c in sorted(calls.items()) if c["name"]]
+        if not msg["tool_calls"]:
+            del msg["tool_calls"]
     if not usage:
-        est = sum(len(str(m.get("content") or "")) for m in messages) // 4 + len(msg["content"]) // 4
-        usage = {"prompt_tokens": est, "completion_tokens": len(msg["content"]) // 4, "total_tokens": est, "estimated": True}
-    return msg, usage
-          
+        est = sum(len(json.dumps(m, ensure_ascii=False)) for m in messages) // 4
+        usage = {"prompt_tokens": est, "completion_tokens": len(text) // 4, "total_tokens": est + len(text) // 4, "estimated": True}
+    return msg, usage, meta

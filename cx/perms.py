@@ -62,7 +62,11 @@ class Perms:
     def decide(self, tool, subject=""):
         if tool == "bash" and hard_denied(subject):
             return "deny"
-        pol = self.policy(tool)
+        if tool.startswith("mcp__"):               # tool MCP: kebijakan per-tool, lalu kebijakan induk "mcp"
+            pols = self.cfg.get("tool_policy", {})
+            pol = pols.get(tool) or pols.get("mcp") or "default"
+        else:
+            pol = self.policy(tool)
         if pol in ("off", "deny"):
             return "deny"
         if pol == "allow":
@@ -99,4 +103,3 @@ class Perms:
         else:
             pol[tool] = value
         config.save(self.cfg)
-      

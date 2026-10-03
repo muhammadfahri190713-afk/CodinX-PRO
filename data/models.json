@@ -1,0 +1,1192 @@
+[
+ {
+  "name": "Claude Fable 5",
+  "id": "claude-fable-5",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Fable 5.1",
+  "id": "claude-fable-5.1",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Haiku 4.5",
+  "id": "claude-haiku-4.5",
+  "role": "PRO",
+  "trial": 3,
+  "price": ""
+ },
+ {
+  "name": "Claude Opus 4.5",
+  "id": "claude-opus-4.5",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Opus 4.6",
+  "id": "claude-opus-4.6",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Opus 4.7",
+  "id": "claude-opus-4.7",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Opus 4.8",
+  "id": "claude-opus-4.8",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Opus 5",
+  "id": "claude-opus-5",
+  "role": "MAX",
+  "trial": 0,
+  "price": "$5/$25"
+ },
+ {
+  "name": "Claude Opus 5.5",
+  "id": "claude-opus-5.5",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Sonnet 4",
+  "id": "claude-sonnet-4",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Sonnet 4.5",
+  "id": "claude-sonnet-4.5",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Sonnet 4.6",
+  "id": "claude-sonnet-4.6",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Claude Sonnet 5",
+  "id": "claude-sonnet-5",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 3.5",
+  "id": "gpt-3.5",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 4.1",
+  "id": "gpt-4.1",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 4.1 Mini",
+  "id": "gpt-4.1-mini",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 4O",
+  "id": "gpt-4o",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5",
+  "id": "gpt-5",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$1.25/$10"
+ },
+ {
+  "name": "GPT 5 Mini",
+  "id": "gpt-5-mini",
+  "role": "FREE",
+  "trial": 0,
+  "price": "$0.25/$2"
+ },
+ {
+  "name": "GPT 5 Nano",
+  "id": "gpt-5-nano",
+  "role": "FREE",
+  "trial": 0,
+  "price": "$0.05/$0.40"
+ },
+ {
+  "name": "GPT 5.2",
+  "id": "gpt-5.2",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5.4",
+  "id": "gpt-5.4",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5.4 Mini",
+  "id": "gpt-5.4-mini",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5.5",
+  "id": "gpt-5.5",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5.6 Luna",
+  "id": "gpt-5.6-luna",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5.6 Sol",
+  "id": "gpt-5.6-sol",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 5.6 Terra",
+  "id": "gpt-5.6-terra",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 6 Astra",
+  "id": "gpt-6-astra",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 6 Luna",
+  "id": "gpt-6-luna",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT 6 Sol",
+  "id": "gpt-6-sol",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "GPT O3 Mini",
+  "id": "gpt-o3-mini",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 2.0 Flash",
+  "id": "gemini-2.0-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 2.5 Flash",
+  "id": "gemini-2.5-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 2.5 Pro",
+  "id": "gemini-2.5-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3 Flash",
+  "id": "gemini-3-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3 Pro",
+  "id": "gemini-3-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$2/$12"
+ },
+ {
+  "name": "Gemini 3.1 Flash",
+  "id": "gemini-3.1-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3.1 Pro",
+  "id": "gemini-3.1-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3.5 Flash",
+  "id": "gemini-3.5-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3.5 Flash Lite",
+  "id": "gemini-3.5-flash-lite",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3.6 Flash",
+  "id": "gemini-3.6-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3.7 Flash",
+  "id": "gemini-3.7-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemini 3.8 Flash",
+  "id": "gemini-3.8-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Gemma 4 31B",
+  "id": "gemma-4-31b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 3 Reasoner",
+  "id": "grok-3-reasoner",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4",
+  "id": "grok-4",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4 Fast",
+  "id": "grok-4-fast",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4 Reasoning",
+  "id": "grok-4-reasoning",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.1",
+  "id": "grok-4.1",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.1 Fast",
+  "id": "grok-4.1-fast",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.1 Reasoning",
+  "id": "grok-4.1-reasoning",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.2",
+  "id": "grok-4.2",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.2 Reasoning",
+  "id": "grok-4.2-reasoning",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.3 Pro",
+  "id": "grok-4.3-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.3 Reasoning",
+  "id": "grok-4.3-reasoning",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.5",
+  "id": "grok-4.5",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$2/$6"
+ },
+ {
+  "name": "Grok 4.6",
+  "id": "grok-4.6",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok 4.7",
+  "id": "grok-4.7",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Grok Build 0.1",
+  "id": "grok-build-0.1",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek Chat V3.1",
+  "id": "deepseek-chat-v3.1",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek R1",
+  "id": "deepseek-r1",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V3",
+  "id": "deepseek-v3",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V3 0324",
+  "id": "deepseek-v3-0324",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V3.1",
+  "id": "deepseek-v3.1",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V3.2",
+  "id": "deepseek-v3.2",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$0.26-$0.287 input"
+ },
+ {
+  "name": "Deepseek V3.2 Think",
+  "id": "deepseek-v3.2-think",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V4 Flash",
+  "id": "deepseek-v4-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V4 Flash 0731",
+  "id": "deepseek-v4-flash-0731",
+  "role": "PRO",
+  "trial": 1,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V4 Flash Vision Exp",
+  "id": "deepseek-v4-flash-vision-exp",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V4 Pro",
+  "id": "deepseek-v4-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V4 Pro 0813",
+  "id": "deepseek-v4-pro-0813",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Deepseek V4.1 Flash",
+  "id": "deepseek-v4.1-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen Plus 2025 07 28",
+  "id": "qwen-plus-2025-07-28",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3 Coder Plus",
+  "id": "qwen3-coder-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3 Max",
+  "id": "qwen3-max",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$0.86-$2.15 input"
+ },
+ {
+  "name": "Qwen3 Omni Flash",
+  "id": "qwen3-omni-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3 VL Plus",
+  "id": "qwen3-vl-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.5 397B A17b",
+  "id": "qwen3.5-397b-a17b",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.5 Flash",
+  "id": "qwen3.5-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.5 Omni Flash",
+  "id": "qwen3.5-omni-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.5 Omni Plus",
+  "id": "qwen3.5-omni-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.5 Plus",
+  "id": "qwen3.5-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.6 27B",
+  "id": "qwen3.6-27b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.6 35B A3b",
+  "id": "qwen3.6-35b-a3b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.6 Max Preview",
+  "id": "qwen3.6-max-preview",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.6 Plus",
+  "id": "qwen3.6-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.7 Flash",
+  "id": "qwen3.7-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.7 Max",
+  "id": "qwen3.7-max",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.7 Plus",
+  "id": "qwen3.7-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.8 Max",
+  "id": "qwen3.8-max",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Qwen3.8 Omni Flash",
+  "id": "qwen3.8-omni-flash",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$0.15 & $0.47"
+ },
+ {
+  "name": "Glm 4.5",
+  "id": "glm-4.5",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.5 Air",
+  "id": "glm-4.5-air",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.5 Airx",
+  "id": "glm-4.5-airx",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.5 Flash",
+  "id": "glm-4.5-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.5 X",
+  "id": "glm-4.5-x",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.5V",
+  "id": "glm-4.5v",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.6",
+  "id": "glm-4.6",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.6V",
+  "id": "glm-4.6v",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.6V Flash",
+  "id": "glm-4.6v-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.6V Flashx",
+  "id": "glm-4.6v-flashx",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 4.7",
+  "id": "glm-4.7",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$0.43/$1.75"
+ },
+ {
+  "name": "Glm 4.7 Flash",
+  "id": "glm-4.7-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": "$0.06/$0.40"
+ },
+ {
+  "name": "Glm 4.7 Flashx",
+  "id": "glm-4.7-flashx",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Glm 5",
+  "id": "glm-5",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$1/$3.2"
+ },
+ {
+  "name": "Glm 5 Turbo",
+  "id": "glm-5-turbo",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$1.20/$4.00"
+ },
+ {
+  "name": "Glm 5.1",
+  "id": "glm-5.1",
+  "role": "MAX",
+  "trial": 0,
+  "price": "$1.4/$4.4"
+ },
+ {
+  "name": "Glm 5.2",
+  "id": "glm-5.2",
+  "role": "MAX",
+  "trial": 0,
+  "price": "$1.4/$4.4"
+ },
+ {
+  "name": "Glm 5.3",
+  "id": "glm-5.3",
+  "role": "MAX",
+  "trial": 0,
+  "price": "$1.4/$4.4"
+ },
+ {
+  "name": "Glm 5.3 Flash",
+  "id": "glm-5.3-flash",
+  "role": "PRO",
+  "trial": 0,
+  "price": "$0.15/$0.50"
+ },
+ {
+  "name": "Glm 5V Turbo",
+  "id": "glm-5v-turbo",
+  "role": "MAX",
+  "trial": 0,
+  "price": "$1.50/$5.00"
+ },
+ {
+  "name": "Kimi K2.5",
+  "id": "kimi-k2.5",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Kimi K2.6",
+  "id": "kimi-k2.6",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Kimi K2.7 Code",
+  "id": "kimi-k2.7-code",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Kimi K3",
+  "id": "kimi-k3",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2",
+  "id": "minimax-m2",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2.1",
+  "id": "minimax-m2.1",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2.1 Highspeed",
+  "id": "minimax-m2.1-highspeed",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2.5",
+  "id": "minimax-m2.5",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2.5 Highspeed",
+  "id": "minimax-m2.5-highspeed",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2.7",
+  "id": "minimax-m2.7",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M2.7 Highspeed",
+  "id": "minimax-m2.7-highspeed",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Minimax M3",
+  "id": "minimax-m3",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Codestral 2508",
+  "id": "codestral-2508",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Devstral Medium",
+  "id": "devstral-medium",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Ministral 14B",
+  "id": "ministral-14b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Ministral 3B",
+  "id": "ministral-3b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Ministral 8B",
+  "id": "ministral-8b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mistral Large 2512",
+  "id": "mistral-large-2512",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mistral Medium 3.5",
+  "id": "mistral-medium-3.5",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mistral Nemo",
+  "id": "mistral-nemo",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mistral Small 2603",
+  "id": "mistral-small-2603",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mistral Small Creative",
+  "id": "mistral-small-creative",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command A",
+  "id": "command-a",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command A Plus",
+  "id": "command-a-plus",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command A Reasoning",
+  "id": "command-a-reasoning",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command A Translate",
+  "id": "command-a-translate",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command A Vision",
+  "id": "command-a-vision",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command R 08 2024",
+  "id": "command-r-08-2024",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command R Plus 08 2024",
+  "id": "command-r-plus-08-2024",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Command R7b 12 2024",
+  "id": "command-r7b-12-2024",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Doubao 1.5 Pro",
+  "id": "doubao-1.5-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Doubao Seed 1.8",
+  "id": "doubao-seed-1.8",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Doubao V3.5",
+  "id": "doubao-v3.5",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Doubao V4.2",
+  "id": "doubao-v4.2",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Doubao V4.5",
+  "id": "doubao-v4.5",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mimo V2.5",
+  "id": "mimo-v2.5",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mimo V2.5 Pro",
+  "id": "mimo-v2.5-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mimo V2.6 Flash",
+  "id": "mimo-v2.6-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Mimo V2.6 Pro",
+  "id": "mimo-v2.6-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Nemotron 3 Nano Omni",
+  "id": "nemotron-3-nano-omni",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Nemotron 3 Super",
+  "id": "nemotron-3-super",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Nemotron 3 Ultra",
+  "id": "nemotron-3-ultra",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Aya Expanse 32B",
+  "id": "aya-expanse-32b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Aya Vision 32B",
+  "id": "aya-vision-32b",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Tiny Aya Earth",
+  "id": "tiny-aya-earth",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Tiny Aya Fire",
+  "id": "tiny-aya-fire",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Tiny Aya Global",
+  "id": "tiny-aya-global",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Tiny Aya Water",
+  "id": "tiny-aya-water",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Sensenova 6.7 Flash Lite",
+  "id": "sensenova-6.7-flash-lite",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Sensenova 6.8 Flash Lite",
+  "id": "sensenova-6.8-flash-lite",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Step 3.5 Flash",
+  "id": "step-3.5-flash",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Step 3.5 Flash Free",
+  "id": "step-3.5-flash-free",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Skylark Pro",
+  "id": "skylark-pro",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Llama 4",
+  "id": "llama-4",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Llama 4.1",
+  "id": "llama-4.1",
+  "role": "PRO",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Longcat 2.0",
+  "id": "longcat-2.0",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "Muse Spark 1.2 Contributor",
+  "id": "muse-spark-1.2-contributor",
+  "role": "MAX",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "North Mini Code",
+  "id": "north-mini-code",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ },
+ {
+  "name": "North Small Translate",
+  "id": "north-small-translate",
+  "role": "FREE",
+  "trial": 0,
+  "price": ""
+ }
+]

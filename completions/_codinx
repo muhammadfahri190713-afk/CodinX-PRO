@@ -1,0 +1,14 @@
+#compdef codinx
+# zsh completion untuk CodinX — pasang: cp completions/_codinx ~/.zsh/completions/ (fpath)
+_arguments -C \
+  '(-V --version)'{-V,--version}'[tampilkan versi]' \
+  '(-m --model)'{-m,--model}'[model untuk sesi ini]:model:' \
+  '--no-color[matikan warna]' \
+  '1:perintah:(run connect doctor models sessions logs)' \
+  '*::argumen:->args'
+case $state in
+  args)
+    case $words[1] in
+      run) _arguments '(-c --continue)'{-c,--continue}'[lanjutkan sesi terakhir]' '--auto[auto-izinkan tool]' '--plan[mode read-only]' '--format[format keluaran]:format:(text json)' '--no-probe[lewati diagnosa]' '*:pesan:' ;;
+    esac ;;
+esac

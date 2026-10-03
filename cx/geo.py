@@ -89,4 +89,3 @@ def next_reset(cfg):
 def remaining_str(cfg):
     secs = int((next_reset(cfg) - now(cfg)).total_seconds())
     return f"{secs // 3600}j {secs % 3600 // 60}m"
-  

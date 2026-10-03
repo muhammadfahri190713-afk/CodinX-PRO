@@ -9,7 +9,7 @@ import subprocess
 import sys
 import time
 
-from . import __version__, api, config, geo, memory, skills, tiers, tools
+from . import __version__, agents, api, caps, config, doctor, fsutil, geo, hooks, log, mcp, memory, skills, tiers, tools
 from . import themes as T
 from .agent import Agent
 from .perms import DEFAULT_POLICY, POLICY_CYCLE, Perms
@@ -28,23 +28,29 @@ PKG_COMMANDS = os.path.join(ROOT, "commands")
 
 COMMANDS = [
     ("/help", "daftar perintah"), ("/new", "sesi baru"), ("/sessions", "lanjutkan sesi lama"),
+    ("/skills", "daftar skill + jalankan (pilih nomor)"), ("/skill", "jalankan skill: /skill <nama> [tugas]  ·  atau /<nama>  ·  atau $nama"),
+    ("/agents", "daftar sub-agent khusus"), ("/mcp", "server MCP: status / reload"), ("/hooks", "daftar hooks aktif"),
+    ("/diff", "git diff berwarna  (/diff --stat)"), ("/debug", "on | off | tail — log debug"),
     ("/models", "pilih model  (/models pro · /models claude)"), ("/connect", "atur endpoint + API key"),
-    ("/permissions", "pengaturan izin tool (web, kamera, terminal…)"), ("/tier", "lihat/ubah paket FREE·PRO·MAX"),
-    ("/status", "paket, Dinar, konteks"), ("/plan", "mode plan (read-only)"), ("/build", "mode build (bisa edit)"),
-    ("/auto", "auto-izinkan semua (hard-deny tetap)"), ("/compact", "ringkas konteks"), ("/undo", "batalkan giliran terakhir"),
-    ("/redo", "ulangi yang di-undo"), ("/init", "buat AGENTS.md"), ("/memory", "lihat/tambah/hapus memori"),
-    ("/skills", "daftar skills"), ("/theme", "ganti tema warna"), ("/details", "tampil/sembunyi detail tool"),
-    ("/thinking", "tampil/sembunyi proses berpikir"), ("/export", "simpan percakapan ke .md"), ("/share", "ekspor lokal untuk dibagikan"),
+    ("/doctor", "diagnosa proxy: riwayat percakapan + tool (otomatis)"), ("/toolmode", "auto|native|text|none"),
+    ("/historymode", "auto|native|flat"), ("/remember", "simpan sesuatu ke memori"), ("/forget", "hapus memori (id | all)"),
+    ("/memory", "lihat/cari/tambah/hapus memori"), ("/permissions", "pengaturan izin tool (web, kamera, terminal…)"),
+    ("/tier", "lihat/ubah paket FREE·PRO·MAX"), ("/status", "paket, Dinar, mode, konteks"), ("/plan", "mode plan (read-only)"),
+    ("/build", "mode build (bisa edit)"), ("/auto", "auto-izinkan semua (hard-deny tetap)"), ("/compact", "ringkas konteks"),
+    ("/undo", "batalkan giliran terakhir"), ("/redo", "ulangi yang di-undo"), ("/init", "buat AGENTS.md"),
+    ("/theme", "ganti tema warna"), ("/details", "tampil/sembunyi detail tool"), ("/thinking", "tampil/sembunyi proses berpikir"),
+    ("/export", "simpan percakapan ke .md"), ("/share", "ekspor lokal untuk dibagikan"),
     ("/location", "provinsi + zona waktu (reset Dinar)"), ("/clear", "bersihkan layar"), ("/exit", "keluar"),
 ]
 ALIASES = {"/quit": "/exit", "/q": "/exit", "/izin": "/permissions", "/perm": "/permissions", "/resume": "/sessions",
            "/continue": "/sessions", "/clear-session": "/new", "/usage": "/status", "/model": "/models", "/summarize": "/compact",
-           "/themes": "/theme", "/session": "/sessions"}
+           "/themes": "/theme", "/session": "/sessions", "/diagnosa": "/doctor", "/cek": "/doctor", "/ingat": "/remember",
+           "/lupa": "/forget", "/tools": "/toolmode"}
 
 PERM_ROWS = [
     ("bash", "Jalankan perintah terminal"), ("edit", "Tulis / ubah file"), ("read", "Baca file"),
     ("webfetch", "Akses web / internet"), ("localhost", "Akses localhost:3000 dkk"), ("camera", "Kamera (foto)"),
-    ("task", "Sub-agent"), ("memory", "Memori jangka panjang"), ("skill", "Skills"),
+    ("task", "Sub-agent"), ("memory", "Memori jangka panjang"), ("skill", "Skills"), ("mcp", "Server MCP eksternal (semua tool MCP)"),
     ("external_directory", "File di luar folder proyek"),
 ]
 POLICY_LABEL = {"default": "○ bawaan", "ask": "? selalu tanya", "allow": "✓ selalu izinkan", "deny": "✗ tolak", "off": "⊘ mati"}
@@ -69,6 +75,21 @@ class App:
         self.ctx.mode = cfg.get("agent", "build") if cfg.get("agent") in ("build", "plan") else "build"
         self.agent = Agent(self)
         self.ctx.subagent_fn = self.agent.subagent
+        self._probed = set()
+        mcp.manager.load(self.cwd, cfg)
+
+    # ------------------------------------------------------------ input aman (tidak pernah menggantung di non-TTY)
+    @staticmethod
+    def _ask(prompt):
+        if not sys.stdin.isatty():
+            raise EOFError("stdin bukan terminal")
+        return input(prompt)
+
+    @staticmethod
+    def _ask_secret(prompt):
+        if not sys.stdin.isatty():
+            raise EOFError("stdin bukan terminal")
+        return getpass.getpass(prompt)
 
     # ------------------------------------------------------------ connection
     def _import_seed(self):
@@ -96,13 +117,22 @@ class App:
         if os.path.isfile(SEED) and self._import_seed():
             return True
         self.ui.warn("Belum terhubung ke endpoint.")
+        if not sys.stdin.isatty():
+            self.ui.err("Mode non-interaktif: set CODINX_API_KEY (dan CODINX_BASE_URL) lewat environment atau file .env, "
+                        "atau jalankan `codinx connect` di terminal.")
+            return False
         return self.connect_wizard()
 
     def connect_wizard(self):
+        if config.env("CODINX_API_KEY") or config.env("CODINX_BASE_URL"):
+            self.ui.warn(".env / variabel lingkungan aktif dan MENIMPA pengaturan di sini. Ubah koneksi di file .env.")
+        if not sys.stdin.isatty():
+            self.ui.err("`connect` butuh terminal interaktif. Non-interaktif: set CODINX_API_KEY / CODINX_BASE_URL (environment atau .env).")
+            return False
         cur = self.cfg.get("base_url") or config.DEFAULT_BASE_URL
         try:
-            url = input(c("accent2", "  Endpoint ") + c("muted", f"[{cur}] › ")).strip() or cur
-            key = getpass.getpass(c("accent2", "  API key ") + c("muted", "(tersembunyi, kosong = tetap) › ")).strip()
+            url = self._ask(c("accent2", "  Endpoint ") + c("muted", f"[{cur}] › ")).strip() or cur
+            key = self._ask_secret(c("accent2", "  API key ") + c("muted", "(tersembunyi, kosong = tetap) › ")).strip()
         except (EOFError, KeyboardInterrupt):
             self.ui.p()
             return False
@@ -135,8 +165,13 @@ class App:
         lim = max(int(self.cfg.get("context_limit", 128000)), 1)
         pct = min(100, int(self.session.last_prompt_tokens * 100 / lim))
         bits = [self.ctx.mode, self.cfg["model"]]
-        bits.append(f"Dinar {st['dinar']}/{st['limit']}" if st["tier"] == "FREE" else f"paket {st['tier']}")
+        bits.append("uji coba · gratis" if st["trial"] else (f"Dinar {st['dinar']}/{st['limit']}" if st["tier"] == "FREE" else f"paket {st['tier']}"))
         bits.append(f"ctx {pct}%")
+        tm, hm = self.agent.modes()
+        if hm == "flat":
+            bits.append("riwayat:flat")
+        if tm != "native":
+            bits.append({"text": "tool:teks", "none": "tanpa-tool"}.get(tm, tm))
         if self.perms.auto:
             bits.append("AUTO")
         return "  " + c("muted", " · ".join(bits))
@@ -152,7 +187,7 @@ class App:
             for f in sorted(os.listdir(d)):
                 if f.endswith(".md"):
                     try:
-                        meta, body = skills.parse(open(os.path.join(d, f), encoding="utf-8").read())
+                        meta, body = skills.parse(fsutil.read_text(os.path.join(d, f)))
                     except OSError:
                         continue
                     found["/" + f[:-3]] = (meta.get("description", ""), body.strip())
@@ -198,7 +233,7 @@ class App:
             p = self.ctx.path(m.group(1))
             if os.path.isfile(p):
                 try:
-                    body = open(p, encoding="utf-8", errors="replace").read()[:20000]
+                    body = fsutil.read_text(p)[:20000]
                     extra.append(f'<file path="{p}">\n{body}\n</file>')
                 except OSError:
                     pass
@@ -228,11 +263,75 @@ class App:
         self.session.messages.append({"role": "assistant", "content": "Dicatat."})
         self.session.save()
 
-    def run_turn(self, text):
+    def expand_skill_mentions(self, text):
+        """$nama-skill di dalam pesan -> isi SKILL.md ikut dikirim (tanpa bergantung pada kemampuan tool model)."""
+        if "[SKILL AKTIF:" in text:
+            return text
+        found = []
+        for m in re.finditer(r"(?<![\w$])\$([A-Za-z][\w-]*)", text):
+            sk = skills.resolve(m.group(1), self.cwd, exact=True)
+            if sk and sk["name"] not in found:
+                found.append(sk["name"])
+        if not found:
+            return text
+        self.ui.p(c("muted", "  ▸ skill dimuat: " + ", ".join(found)))
+        return text + "\n\n" + "\n\n".join(f"[SKILL AKTIF: {n}]\n{skills.load(n, self.cwd)}" for n in found)
+
+    def maybe_probe(self):
+        """Diagnosa kemampuan proxy/model sekali per model (riwayat + tool) agar skills & memori pasti jalan."""
+        model = self.cfg["model"]
+        if model in self._probed or not self.cfg.get("auto_probe", True):
+            return
+        self._probed.add(model)
+        if self.cfg.get("tool_mode", "auto") != "auto" and self.cfg.get("history_mode", "auto") != "auto":
+            return
+        if caps.get(model) or not tiers.can_use_model(self.cfg, model)[0]:
+            return
+        self.ui.info("Memeriksa kemampuan model (sekali saja per model)…")
+        self.ui.spin_start("diagnosa")
+        try:
+            res = doctor.run(self)
+        except api.ApiError as e:
+            self.ui.spin_stop()
+            self.ui.warn(f"Diagnosa dilewati: {str(e)[:120]}")
+            return
+        finally:
+            self.ui.spin_stop()
+        self.ui.p(c("muted", "  " + doctor.summary(res)))
+
+    def submit(self, text, attach=True):
+        h = hooks.run("UserPromptSubmit", self.cwd, self.cfg, {"prompt": text})
+        if h["blocked"]:
+            self.ui.warn("Prompt diblokir oleh hook: " + h["message"][:200])
+            return ""
+        text = self.expand_skill_mentions(text)
+        for fact in memory.auto_capture(text, self.cwd):
+            self.ui.p(c("muted", "  💾 diingat: ") + c("text", fact))
+        if h["output"]:
+            text += "\n\n[konteks dari hook]\n" + h["output"]
+        final = self.agent.turn(self.attach_mentions(text) if attach else text)
+        s = hooks.run("Stop", self.cwd, self.cfg, {"final": (final or "")[:2000], "session": self.session.id})
+        if s["message"]:
+            self.ui.info("hook Stop: " + s["message"][:160])
+        return final
+
+    def run_turn(self, text, attach=True):
         if not self.ensure_connected():
             return
-        self.agent.turn(text)
+        self.maybe_probe()
+        self.submit(text, attach)
         self.ui.p()
+
+    def run_skill(self, name, args=""):
+        sk = skills.resolve(name, self.cwd)
+        if not sk:
+            import difflib
+            near = difflib.get_close_matches(name, list(skills.discover(self.cwd)), 3)
+            return self.ui.err(f"Skill '{name}' tidak ada." + (" Maksud kamu: " + ", ".join(near) + "?" if near else " Lihat /skills"))
+        body = skills.load(sk["name"], self.cwd)
+        task = self.attach_mentions(args.strip()) if args.strip() else "Terapkan skill ini pada konteks/percakapan saat ini dan kerjakan hingga selesai."
+        self.ui.p(c("accent2", "  ▸ skill: ") + c("text", sk["name"], bold=True) + c("muted", " — " + sk["description"][:60]))
+        self.run_turn(f"[SKILL AKTIF: {sk['name']}]\n{body}\n\n[TUGAS USER]\n{task}", attach=False)
 
     # ------------------------------------------------------------ REPL
     def read_line(self):
@@ -250,7 +349,10 @@ class App:
         if prev and ok:
             self.set_session(prev)
             extra = f"sesi dilanjutkan: {prev.title[:40] or prev.id} ({len(prev.messages)} pesan) · /new untuk baru"
-        self.ui.banner(self.cfg["model"], self.ctx.mode, tiers.tier_of(self.cfg), self.cwd, extra)
+        self.ui.banner(self.cfg["model"], self.ctx.mode, tiers.plan_label(self.cfg), self.cwd, extra)
+        leak = config.env_leak_warning()
+        if leak:
+            self.ui.warn(leak)
         if ok:
             m = tiers.can_use_model(self.cfg, self.cfg["model"])
             if not m[0]:
@@ -273,7 +375,7 @@ class App:
                 elif line.startswith("!"):
                     self.shell(line[1:].strip())
                 else:
-                    self.run_turn(self.attach_mentions(line))
+                    self.run_turn(line)
             except KeyboardInterrupt:
                 self.ui.p("\n" + c("warn", "  dihentikan"))
         self.session.save()
@@ -290,7 +392,10 @@ class App:
             return fn(arg)
         custom = self.custom_commands().get(name)
         if custom:
-            return self.run_turn(self.expand_template(custom[1], arg))
+            return self.run_turn(self.expand_template(custom[1], arg), attach=False)
+        sk = skills.resolve(name[1:], self.cwd)
+        if sk:
+            return self.run_skill(sk["name"], arg)
         self.ui.err(f"Perintah {name} tidak dikenal. Ketik /help")
 
     def cmd_help(self, arg):
@@ -306,7 +411,7 @@ class App:
 
     def cmd_clear(self, arg):
         sys.stdout.write("\033[2J\033[H")
-        self.ui.banner(self.cfg["model"], self.ctx.mode, tiers.tier_of(self.cfg), self.cwd)
+        self.ui.banner(self.cfg["model"], self.ctx.mode, tiers.plan_label(self.cfg), self.cwd)
 
     def cmd_new(self, arg):
         self.session.save()
@@ -319,11 +424,20 @@ class App:
     def cmd_status(self, arg):
         st = tiers.status(self.cfg)
         g = geo.lookup()
-        rows = [["model", self.cfg["model"]], ["paket", st["tier"]], ["mode", self.ctx.mode],
-                ["endpoint", self.cfg["base_url"]], ["folder", self.cwd], ["sesi", f"{self.session.id} ({len(self.session.messages)} pesan)"],
+        rows = [["model", self.cfg["model"]], ["paket", tiers.plan_label(self.cfg)], ["mode", self.ctx.mode],
+                ["endpoint", self.cfg["base_url"]], ["sumber API key", config.key_source()], ["folder", self.cwd], ["sesi", f"{self.session.id} ({len(self.session.messages)} pesan)"],
                 ["token konteks", f"{self.session.last_prompt_tokens}/{self.cfg.get('context_limit')}"],
                 ["request hari ini", st["requests"]]]
-        if st["tier"] == "FREE":
+        tm, hm = self.agent.modes()
+        rows.append(["mode tool", tm + (" (auto)" if self.cfg.get("tool_mode") == "auto" else "")])
+        rows.append(["mode riwayat", hm + (" (auto)" if self.cfg.get("history_mode") == "auto" else "")])
+        rows.append(["id percakapan", self.session.id])
+        rows.append(["id respons server", self.session.remote_id or "-"])
+        if self.session.remote_conv:
+            rows.append(["id percakapan server", self.session.remote_conv])
+        if st["trial"]:
+            rows.append(["biaya", "GRATIS — mode uji coba (Dinar tidak dipotong). Matikan: CODINX_TRIAL=0"])
+        elif st["tier"] == "FREE":
             rows.append(["Dinar", f"{st['dinar']}/{st['limit']}  (reset 00:00 dalam {st['reset_in']})"])
         rows.append(["zona waktu", f"{geo.tz_name(self.cfg)}" + (f" · {g.get('province')}" if g.get("province") else "")])
         if st["trials"]:
@@ -349,6 +463,8 @@ class App:
         self.cfg["tier"] = arg.lower()
         self.save_cfg()
         self.ui.ok(f"Paket diubah ke {arg.upper()}.")
+        if tiers.trial_mode(self.cfg):
+            return self.ui.info("Mode uji coba aktif: semua model gratis, paket belum berpengaruh. Matikan dengan CODINX_TRIAL=0.")
         ok, _, msg = tiers.can_use_model(self.cfg, self.cfg["model"])
         if not ok:
             self.ui.warn(msg + " Pilih model lain dengan /models.")
@@ -418,36 +534,147 @@ class App:
     def cmd_export(self, arg):
         name = arg or f"codinx-{self.session.id}.md"
         p = self.ctx.path(name)
-        open(p, "w", encoding="utf-8").write(self.session.export_md())
+        fsutil.write_text(p, self.session.export_md())
         self.ui.ok("Diekspor: " + p)
 
     def cmd_share(self, arg):
         d = os.path.join(config.HOME, "shares")
         os.makedirs(d, exist_ok=True)
         p = os.path.join(d, self.session.id + ".md")
-        open(p, "w", encoding="utf-8").write(self.session.export_md())
+        fsutil.write_text(p, self.session.export_md())
         self.ui.ok("Ekspor lokal (tanpa upload): " + p)
 
     def cmd_skills(self, arg):
         sk = skills.discover(self.cwd)
+        if arg:
+            name, _, rest = arg.partition(" ")
+            return self.run_skill(name, rest)
         if not sk:
             return self.ui.info("Belum ada skill. Letakkan di ~/.codinx/skills/<nama>/SKILL.md")
-        self.ui.table(["skill", "deskripsi"], [[n, s["description"][:70]] for n, s in sk.items()], "Skills")
+        names = list(sk)
+        self.ui.table(["#", "skill", "deskripsi"], [[i + 1, n, sk[n]["description"][:62]] for i, n in enumerate(names)],
+                      "Skills — jalankan: /skill <nama> <tugas>  ·  /<nama>  ·  $nama di pesan")
+        try:
+            a = self._ask(c("muted", "  nomor / nama skill untuk dijalankan (enter batal) › ")).strip()
+            if not a:
+                return
+            name = names[int(a) - 1] if a.isdigit() and 1 <= int(a) <= len(names) else a
+            task = self._ask(c("muted", "  tugas untuk skill ini (enter = pakai konteks saat ini) › ")).strip()
+        except (EOFError, KeyboardInterrupt):
+            return self.ui.p()
+        self.run_skill(name, task)
+
+    cmd_skill = cmd_skills
+
+    def cmd_remember(self, arg):
+        if not arg:
+            return self.ui.info("Pakai: /remember <teks yang harus diingat>")
+        self.ui.ok(f"Tersimpan di memori (id {memory.add(arg, 'global', self.cwd)}).")
+
+    def cmd_forget(self, arg):
+        if arg == "all":
+            memory.clear()
+            return self.ui.ok("Memori dikosongkan.")
+        if arg.isdigit():
+            return self.ui.ok(f"{memory.remove(arg)} ingatan dihapus.")
+        self.ui.info("Pakai: /forget <id>  atau  /forget all")
 
     def cmd_memory(self, arg):
         sub, _, rest = arg.partition(" ")
         if sub == "add" and rest:
-            self.ui.ok(f"Tersimpan (id {memory.add(rest, 'global')}).")
-        elif sub in ("rm", "del", "hapus") and rest.strip().isdigit():
-            self.ui.ok(f"{memory.remove(rest.strip())} dihapus.")
-        elif sub == "clear":
-            memory.clear()
-            self.ui.ok("Memori dikosongkan.")
+            return self.cmd_remember(rest)
+        if sub in ("rm", "del", "hapus") and rest.strip().isdigit():
+            return self.cmd_forget(rest.strip())
+        if sub == "clear":
+            return self.cmd_forget("all")
+        items = memory.relevant(self.cwd, rest if sub in ("search", "cari") else "")
+        if not items:
+            return self.ui.info("Memori kosong. /remember <teks>, atau tulis \"ingat bahwa …\" / \"nama saya …\" di chat.")
+        self.ui.table(["id", "lingkup", "isi"], [[i["id"], i["scope"], i["text"][:80]] for i in items], "Memori")
+
+    def cmd_doctor(self, arg):
+        if not self.ensure_connected():
+            return
+        if arg == "reset":
+            caps.clear(self.cfg["model"])
+            self.ui.ok("Hasil diagnosa model ini dihapus.")
+        ok, _, msg = tiers.can_use_model(self.cfg, self.cfg["model"])
+        if not ok:
+            return self.ui.warn(msg)
+        self.ui.spin_start("diagnosa proxy (±5-30 dtk)")
+        try:
+            res = doctor.run(self)
+        except api.ApiError as e:
+            self.ui.spin_stop()
+            return self.ui.err(f"Diagnosa gagal: {str(e)[:200]}")
+        finally:
+            self.ui.spin_stop()
+        h = {"native": "✓ normal — proxy meneruskan riwayat",
+             "flat": "⚠ proxy TIDAK meneruskan riwayat → otomatis memakai mode flat (riwayat digabung jadi 1 pesan)",
+             None: "✗ tidak bisa dipastikan (tetap native). Coba /historymode flat"}[res["history"]]
+        t = {"native": "✓ native (function-calling OpenAI)",
+             "text": "⚠ teks: proxy/model tanpa function-calling → tool lewat blok <tool_call> (tetap berfungsi penuh)",
+             "none": "✗ model ini tidak bisa memakai tool → chat saja; skill lewat /skill, tindakan lewat !perintah. Coba /models lain"}[res["tools"]]
+        self.ui.table(["", ""], [["model", res["model"]], ["riwayat percakapan", h], ["pemanggilan tool", t]] +
+                      [["catatan", n] for n in res["notes"]], "Diagnosa CodinX")
+        self.ui.p(c("muted", "  Disimpan untuk model ini dan dipakai otomatis. Ulang: /doctor · hapus: /doctor reset"))
+
+    def _set_mode(self, key, allowed, arg, label):
+        if arg in allowed:
+            self.cfg[key] = arg
+            self.save_cfg()
+            self.ui.ok(f"{label}: {arg}")
         else:
-            items = memory.relevant(self.cwd)
-            if not items:
-                return self.ui.info("Memori kosong. /memory add <teks> — atau biarkan agent menyimpannya sendiri.")
-            self.ui.table(["id", "lingkup", "isi"], [[i["id"], i["scope"], i["text"][:80]] for i in items], "Memori")
+            tm, hm = self.agent.modes()
+            self.ui.info(f"{label} sekarang: {self.cfg.get(key)} (efektif: {tm if key == 'tool_mode' else hm}). Pilih: {' | '.join(allowed)}")
+
+    def cmd_toolmode(self, arg):
+        self._set_mode("tool_mode", ("auto", "native", "text", "none"), arg.lower(), "Mode tool")
+
+    def cmd_historymode(self, arg):
+        self._set_mode("history_mode", ("auto", "native", "flat"), arg.lower(), "Mode riwayat")
+
+    def cmd_agents(self, arg):
+        ag = agents.discover(self.cwd)
+        if not ag:
+            return self.ui.info("Belum ada sub-agent. Letakkan file .md di ~/.codinx/agents/")
+        self.ui.table(["agent", "tool", "deskripsi"], [[n, ", ".join(a["tools"] or tools.SUBAGENT_TOOLS)[:34], a["description"][:50]] for n, a in ag.items()],
+                      "Sub-agent (dipanggil model lewat tool task)")
+
+    def cmd_mcp(self, arg):
+        if arg == "reload":
+            mcp.manager.reload(self.cwd, self.cfg)
+        if not mcp.manager.specs:
+            return self.ui.info("Belum ada server MCP. Isi ~/.codinx/mcp.json (contoh: examples/mcp.json).")
+        mcp.manager.ensure_started(self.ui)
+        self.ui.table(["server", "status", "tool"], mcp.manager.status(), "Server MCP")
+
+    def cmd_hooks(self, arg):
+        rows = [[ev, it.get("matcher", "*"), it["command"][:50]] for ev, items in hooks.load(self.cwd, self.cfg).items() for it in items]
+        if not rows:
+            return self.ui.info("Belum ada hooks. Isi ~/.codinx/hooks.json (contoh: examples/hooks.json).")
+        self.ui.table(["event", "matcher", "perintah"], rows, "Hooks aktif")
+
+    def cmd_diff(self, arg):
+        try:
+            r = subprocess.run(["git", "-C", self.cwd, "diff", "--no-color"] + shlex.split(arg), capture_output=True, text=True, timeout=20)
+        except (OSError, subprocess.SubprocessError, ValueError) as e:
+            return self.ui.err(f"git diff gagal: {e}")
+        if r.returncode != 0:
+            return self.ui.err((r.stderr or "bukan repo git").strip()[:200])
+        if not r.stdout.strip():
+            return self.ui.info("Tidak ada perubahan (git diff kosong).")
+        self.ui.diff(r.stdout, limit=500, force=True)
+
+    def cmd_debug(self, arg):
+        if arg in ("on", "off"):
+            log.set_enabled(arg == "on")
+            return self.ui.ok(f"Log debug {arg}. File: {log.LOG_DIR}")
+        if arg == "tail":
+            for ln in log.tail(30):
+                self.ui.p(c("muted", "  " + ln[:200]))
+            return
+        self.ui.info(f"Log debug: {'ON' if log.enabled() else 'off'}  ({log.LOG_DIR}). Pakai: /debug on | off | tail")
 
     def cmd_sessions(self, arg):
         items = Session.list_all()[:15]
@@ -455,7 +682,7 @@ class App:
             return self.ui.info("Belum ada sesi tersimpan.")
         self.ui.table(["#", "judul", "folder", "pesan"], [[i + 1, it["title"][:34] or it["id"], it["cwd"][-24:], it["n"]] for i, it in enumerate(items)], "Sesi")
         try:
-            a = input(c("muted", "  nomor untuk dilanjutkan (enter batal) › ")).strip()
+            a = self._ask(c("muted", "  nomor untuk dilanjutkan (enter batal) › ")).strip()
         except (EOFError, KeyboardInterrupt):
             return
         if a.isdigit() and 1 <= int(a) <= len(items):
@@ -477,7 +704,10 @@ class App:
         if not items:
             return self.ui.warn("Tidak ada model cocok.")
         cnt = {r: sum(1 for m in cat if m["role"] == r) for r in ("FREE", "PRO", "MAX")}
-        self.ui.p(c("muted", f"  {len(cat)} model · FREE {cnt['FREE']} · PRO {cnt['PRO']} · MAX {cnt['MAX']} · paket kamu: ") + c("accent2", tiers.tier_of(self.cfg), bold=True))
+        if tiers.trial_mode(self.cfg):
+            self.ui.p(c("muted", f"  {len(cat)} model · ") + c("ok", "SEMUA GRATIS", bold=True) + c("muted", " (mode uji coba)"))
+        else:
+            self.ui.p(c("muted", f"  {len(cat)} model · FREE {cnt['FREE']} · PRO {cnt['PRO']} · MAX {cnt['MAX']} · paket kamu: ") + c("accent2", tiers.tier_of(self.cfg), bold=True))
         shown = items[:40]
         for i, m in enumerate(shown, 1):
             ok, via, _ = tiers.can_use_model(self.cfg, m["id"])
@@ -488,7 +718,7 @@ class App:
         if len(items) > len(shown):
             self.ui.p(c("muted", f"  … {len(items) - len(shown)} lagi — persempit: /models claude · /models free · /models pro"))
         try:
-            a = input(c("muted", "  pilih nomor / id (enter batal) › ")).strip()
+            a = self._ask(c("muted", "  pilih nomor / id (enter batal) › ")).strip()
         except (EOFError, KeyboardInterrupt):
             return
         if not a:
@@ -511,7 +741,7 @@ class App:
             self.ui.table(["#", "izin", "status", "keterangan"], rows, "Pengaturan izin CodinX")
             self.ui.p(c("muted", "  ketik nomor = ganti status (bawaan → tanya → izinkan → tolak → mati) · r = reset semua · enter = selesai"))
             try:
-                a = input(c("accent", "  izin › ")).strip().lower()
+                a = self._ask(c("accent", "  izin › ")).strip().lower()
             except (EOFError, KeyboardInterrupt):
                 self.ui.p()
                 return

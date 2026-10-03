@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "echo": {"command": "python3", "args": ["/opt/codinx/examples/mcp-echo-server.py"]}
+  }
+}

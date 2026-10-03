@@ -1,0 +1,11 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {"matcher": "bash", "command": "python3 -c \"import json,sys; d=json.load(sys.stdin); c=d['args'].get('command',''); sys.exit(2) if 'DROP TABLE' in c.upper() else 0\"", "timeout": 10}
+    ],
+    "PostToolUse": [
+      {"matcher": "edit|write|multiedit", "command": "python3 -m py_compile \"$(python3 -c \"import json,sys; print(json.load(sys.stdin)['args'].get('path',''))\")\" 2>&1 || true"}
+    ],
+    "UserPromptSubmit": [{"command": "date +'Waktu server: %F %T %Z'"}]
+  }
+}

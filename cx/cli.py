@@ -3,14 +3,13 @@ import json
 import os
 import sys
 
-from . import __version__, config, guard, tiers
+from . import __version__, config, tiers
 from . import themes as T
 from .session import Session
 
 
 def main(argv=None):
-    guard.check()
-    ap = argparse.ArgumentParser(prog="codinx", description="CodinX — agent coding di terminal (root only).")
+    ap = argparse.ArgumentParser(prog="codinx", description="CodinX — agent coding di terminal (Linux, Termux, dan container).")
     ap.add_argument("-V", "--version", action="store_true")
     ap.add_argument("-m", "--model", help="model untuk sesi ini")
     ap.add_argument("--no-color", action="store_true")
@@ -23,10 +22,14 @@ def main(argv=None):
     r.add_argument("--plan", action="store_true", help="mode read-only")
     r.add_argument("--format", choices=["text", "json"], default="text")
     r.add_argument("--no-color", action="store_true")
+    r.add_argument("--no-probe", action="store_true", help="lewati diagnosa otomatis")
     sub.add_parser("connect", help="atur endpoint + API key")
+    sub.add_parser("doctor", help="diagnosa proxy: riwayat percakapan + tool")
     mp = sub.add_parser("models", help="daftar model & paket")
     mp.add_argument("filter", nargs="?", default="")
     sub.add_parser("sessions", help="daftar sesi")
+    lp = sub.add_parser("logs", help="tampilkan log debug terbaru (aktifkan: CODINX_DEBUG=1)")
+    lp.add_argument("-n", type=int, default=40)
     args = ap.parse_args(argv)
 
     if args.version:
@@ -43,6 +46,16 @@ def main(argv=None):
 
     if args.cmd == "connect":
         return 0 if app.connect_wizard() else 1
+    if args.cmd == "doctor":
+        if not app.ensure_connected():
+            return 2
+        app.cmd_doctor("")
+        return 0
+    if args.cmd == "logs":
+        from . import log
+        for ln in log.tail(args.n):
+            print(ln)
+        return 0
     if args.cmd == "models":
         app.ensure_connected()
         _list_models(app, args.filter)
@@ -65,9 +78,16 @@ def main(argv=None):
             prev = Session.latest_for(app.cwd)
             if prev:
                 app.set_session(prev)
-        text = sys.stdin.read() if args.message == ["-"] else " ".join(args.message)
+        text = (sys.stdin.read() if args.message == ["-"] else " ".join(args.message)).strip()
+        if text.startswith("/"):                    # /skill web-check ..., /memory, /doctor ... juga jalan di mode run
+            app.slash(text)
+            return 0
+        if args.no_probe:
+            cfg["auto_probe"] = False
         app.ui.quiet = args.format == "json"
-        final = app.agent.turn(app.attach_mentions(text))
+        if not app.ui.quiet:
+            app.maybe_probe()
+        final = app.submit(text)
         if args.format == "json":
             print(json.dumps({"session": app.session.id, "model": cfg["model"], "text": final,
                               "tokens": app.session.tokens_total}, ensure_ascii=False))
@@ -86,4 +106,3 @@ def _list_models(app, flt):
     rows = [[m["id"], m["role"], m["trial"] or ""] for m in tiers.catalog()
             if not q or q in m["id"].lower() or q in m["name"].lower() or q == m["role"].lower()]
     app.ui.table(["id", "paket", "trial"], rows, f"{len(rows)} model")
-  

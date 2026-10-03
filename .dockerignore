@@ -1,0 +1,10 @@
+.git
+.env
+.env.*
+!.env.example
+.seed
+*.enc
+__pycache__
+*.pyc
+dist
+.codinx

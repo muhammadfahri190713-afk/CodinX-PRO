@@ -1,0 +1,11 @@
+{
+  "name": "codinx-agents",
+  "version": "1.0.0",
+  "description": "CodinX — terminal coding agent (root only)",
+  "private": true,
+  "bin": { "codinx": "bin/codinx" },
+  "scripts": {
+    "codinx-agents": "python3 bin/codinx",
+    "start": "python3 bin/codinx"
+  }
+}

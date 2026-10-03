@@ -1,0 +1,6 @@
+{
+  "model": "deepseek-v4-flash",
+  "agent": "build",
+  "max_steps": 40,
+  "theme": "tokyonight"
+}

@@ -4,7 +4,7 @@ import os
 import time
 import uuid
 
-from . import config
+from . import config, fsutil
 
 
 class Session:
@@ -17,6 +17,8 @@ class Session:
         self.todos = []
         self.last_prompt_tokens = 0
         self.tokens_total = 0
+        self.remote_id = None       # id respons terakhir dari server (chatcmpl-...)
+        self.remote_conv = None     # id percakapan yang diberikan server (jika ada)
         self.turns = []        # in-memory: {"index","user","backups"}
         self.redo_stack = []
 
@@ -35,7 +37,8 @@ class Session:
                     break
         data = {"id": self.id, "cwd": self.cwd, "created": self.created, "title": self.title,
                 "messages": self.messages, "todos": self.todos,
-                "last_prompt_tokens": self.last_prompt_tokens, "tokens_total": self.tokens_total}
+                "last_prompt_tokens": self.last_prompt_tokens, "tokens_total": self.tokens_total,
+                "remote_id": self.remote_id, "remote_conv": self.remote_conv}
         tmp = self.path + ".tmp"
         with open(tmp, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False)
@@ -50,6 +53,7 @@ class Session:
         s.id, s.created, s.title = d["id"], d.get("created", time.time()), d.get("title", "")
         s.messages, s.todos = d.get("messages", []), d.get("todos", [])
         s.last_prompt_tokens, s.tokens_total = d.get("last_prompt_tokens", 0), d.get("tokens_total", 0)
+        s.remote_id, s.remote_conv = d.get("remote_id"), d.get("remote_conv")
         return s
 
     @staticmethod
@@ -95,13 +99,13 @@ class Session:
         t = self.turns.pop()
         after = {}
         for p, orig in t["backups"].items():
-            after[p] = open(p, "rb").read() if os.path.isfile(p) else None
+            after[p] = fsutil.read_bytes(p) if os.path.isfile(p) else None
             if orig is None:
                 if os.path.isfile(p):
                     os.remove(p)
             else:
                 os.makedirs(os.path.dirname(p), exist_ok=True)
-                open(p, "wb").write(orig)
+                fsutil.write_bytes(p, orig)
         removed = self.messages[t["index"]:]
         del self.messages[t["index"]:]
         self.redo_stack.append({"turn": t, "after": after, "removed": removed})
@@ -118,7 +122,7 @@ class Session:
                     os.remove(p)
             else:
                 os.makedirs(os.path.dirname(p), exist_ok=True)
-                open(p, "wb").write(data)
+                fsutil.write_bytes(p, data)
         r["turn"]["index"] = len(self.messages)
         self.messages.extend(r["removed"])
         self.turns.append(r["turn"])
@@ -139,4 +143,3 @@ class Session:
             elif m["role"] == "tool":
                 lines += ["```", str(m["content"])[:800], "```", ""]
         return "\n".join(lines)
-      
