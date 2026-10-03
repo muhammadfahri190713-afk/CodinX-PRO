@@ -697,7 +697,8 @@ class App:
         known = {m["id"] for m in cat}
         if self.key:
             try:
-                cat += [{"name": i, "id": i, "role": "FREE", "trial": 0, "price": ""} for i in api.list_models(self.cfg, self.key) if i not in known]
+                live = api.list_model_specs(self.cfg, self.key)
+                cat += [m for m in live if m["id"] not in known]
             except api.ApiError:
                 pass
         items = [m for m in cat if not q or q in m["id"].lower() or q in m["name"].lower() or q == m["role"].lower()]

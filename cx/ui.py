@@ -34,7 +34,7 @@ def term_width():
 
 
 def banner_lines():
-    return ["".join(GLYPHS[ch][r] for ch in "CODINX") for r in range(6)]
+    return ["CodinX"]
 
 
 # ----------------------------------------------------------------- markdown
@@ -204,10 +204,7 @@ class UI:
     def banner(self, model, agent, tier, cwd, extra=""):
         rows = banner_lines()
         self.p()
-        n = len(rows)
-        for i, r in enumerate(rows):
-            self.p("  " + T.gradient(r, i / (n * 2), 0.5 + i / (n * 2)))
-        self.p("  " + c("muted", f"terminal coding agent · v{__version__} · root mode"))
+        self.p("  " + c("accent2", rows[0], bold=True) + c("muted", f"  v{__version__} · terminal coding agent"))
         self.p()
         box = [
             ("model", model or "(belum dipilih)"),

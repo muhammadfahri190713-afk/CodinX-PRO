@@ -3,7 +3,7 @@ import json
 import os
 import sys
 
-from . import __version__, config, tiers
+from . import __version__, api, config, tiers
 from . import themes as T
 from .session import Session
 
@@ -103,6 +103,13 @@ def main(argv=None):
 
 def _list_models(app, flt):
     q = flt.lower()
-    rows = [[m["id"], m["role"], m["trial"] or ""] for m in tiers.catalog()
+    cat = list(tiers.catalog())
+    known = {m["id"] for m in cat}
+    if app.key:
+        try:
+            cat += [m for m in api.list_model_specs(app.cfg, app.key) if m["id"] not in known]
+        except api.ApiError:
+            pass
+    rows = [[m["name"], m["id"], m["role"], m["trial"] or ""] for m in cat
             if not q or q in m["id"].lower() or q in m["name"].lower() or q == m["role"].lower()]
-    app.ui.table(["id", "paket", "trial"], rows, f"{len(rows)} model")
+    app.ui.table(["nama", "backend id", "paket", "trial"], rows, f"{len(rows)} model")

@@ -5,6 +5,7 @@ import unittest
 from unittest import mock
 
 from cx import caps, config, hooks, memory, tiers
+from cx import api
 from cx.app import ALIASES, COMMANDS, App
 
 
@@ -30,6 +31,23 @@ class AppCase(unittest.TestCase):
 
     def names(self, **kw):
         return {s["function"]["name"] for s in self.app.agent.tool_schemas(**kw)}
+
+
+class LiveModelCatalog(unittest.TestCase):
+    def test_video_filter_and_display_name(self):
+        payload = {"data": [
+            {"id": "gpt-5.6-sol", "name": "GPT 5.6 Sol"},
+            {"id": "seedance-2.5", "name": "Seedance 2.5", "category": "video"},
+            {"id": "sana", "name": "Sana", "category": "image"},
+        ]}
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self, *args): pass
+            def read(self): return json.dumps(payload).encode()
+        with mock.patch.object(api, "_open", return_value=Response()):
+            out = api.list_model_specs({"base_url": "https://example.test/api/v1"}, "key")
+        self.assertEqual([m["id"] for m in out], ["gpt-5.6-sol", "sana"])
+        self.assertEqual(out[0]["name"], "GPT 5.6 Sol")
 
 
 class ToolSchemas(AppCase):

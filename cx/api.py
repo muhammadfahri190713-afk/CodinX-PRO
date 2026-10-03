@@ -42,7 +42,16 @@ def _open(cfg, key, path, payload=None, conv_id=None, timeout=600):
     return urllib.request.urlopen(req, timeout=timeout, context=_ctx(cfg))
 
 
-def list_models(cfg, key):
+def _is_video_model(model):
+    text = " ".join(str(model.get(k, "")) for k in ("id", "name", "type", "category", "endpoint")).lower()
+    # Endpoint /models dapat mengembalikan katalog chat + video sekaligus.
+    return any(token in text for token in (
+        "video", "seedance", "veo-", "wan-", "nova-reel", "p-video", "happyhorse", "minimax-h3"
+    ))
+
+
+def list_model_specs(cfg, key):
+    """Ambil model live: id dipakai backend, name hanya untuk tampilan."""
     try:
         with _open(cfg, key, "/models", timeout=20) as r:
             d = json.loads(r.read().decode())
@@ -52,8 +61,22 @@ def list_models(cfg, key):
     except Exception as e:
         raise ApiError(str(getattr(e, "reason", e)))
     items = d.get("data", d) if isinstance(d, dict) else d
-    ids = [(m.get("id") if isinstance(m, dict) else str(m)) for m in items]
-    return sorted(i for i in ids if i)
+    specs = []
+    for item in items if isinstance(items, list) else []:
+        m = item if isinstance(item, dict) else {"id": str(item)}
+        model_id = str(m.get("id") or m.get("model") or "").strip()
+        if not model_id or _is_video_model(m):
+            continue
+        display = str(m.get("name") or m.get("display_name") or model_id.replace("-", " ").title()).strip()
+        role = str(m.get("role") or m.get("tier") or "FREE").upper()
+        if role not in ("FREE", "PRO", "MAX"):
+            role = "FREE"
+        specs.append({"id": model_id, "name": display, "role": role, "trial": int(m.get("trial") or 0), "price": str(m.get("price") or "")})
+    return sorted(specs, key=lambda m: m["id"])
+
+
+def list_models(cfg, key):
+    return [m["id"] for m in list_model_specs(cfg, key)]
 
 
 def chat(cfg, key, messages, tools=None, on_text=None, on_reasoning=None, conv_id=None, timeout=600):
