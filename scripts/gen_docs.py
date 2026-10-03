@@ -62,12 +62,13 @@ def cmds():
 
 
 def conf():
-    t = "# Konfigurasi\n\n> Dihasilkan otomatis dari kode oleh `scripts/gen_docs.py`.\n\nPrioritas: **variabel lingkungan nyata > `.env` > brankas/`config.json`** (untuk koneksi); "
+    t = "# Konfigurasi\n\n> Dihasilkan otomatis dari kode oleh `scripts/gen_docs.py`.\n\nPrioritas: **variabel lingkungan nyata > `api.py` > `.env` legacy > brankas/`config.json`** (untuk koneksi); "
     t += "`<proyek>/.codinx/config.json` hanya boleh mengubah: " + ", ".join(f"`{k}`" for k in sorted(config.PROJECT_KEYS)) + ".\n\n"
     t += "## `~/.codinx/config.json`\n\n| Kunci | Bawaan | Arti |\n|---|---|---|\n"
     t += "".join(f"| `{k}` | `{v!r}` | {DESC.get(k, '')} |\n" for k, v in config.DEFAULTS.items())
-    t += "\n## Variabel lingkungan / `.env` (hanya awalan `CODINX_`)\n\n| Variabel | Menentukan |\n|---|---|\n" + "".join(f"| `{a}` | {b} |\n" for a, b in ENV)
-    t += "\n## File data di `~/.codinx/`\n\n`config.json` · `.key.enc` (kunci terenkripsi) · `.env` · `sessions/` · `memory.json` · `usage.json` · `geo.json` · `caps.json` (hasil diagnosa) · `history` · `skills/` · `commands/` · `agents/` · `hooks.json` · `mcp.json` · `logs/` · `shares/` · `bg/`\n"
+    t += "\n## `api.py` (koneksi lokal)\n\nSalin `api.example.py` menjadi `api.py`, lalu isi `API_KEY`. File ini hanya dibaca sebagai konstanta teks, diberi mode 600, dan masuk `.gitignore`; jangan pernah commit API key ke repository publik. `BASE_URL` opsional, default: `https://inttelix.vercel.app/api/v1`.\n\n"
+    t += "## Variabel lingkungan / `.env` legacy (hanya awalan `CODINX_`)\n\n| Variabel | Menentukan |\n|---|---|---\n" + "".join(f"| `{a}` | {b} |\n" for a, b in ENV)
+    t += "\n## File data di `~/.codinx/`\n\n`config.json` · `.key.enc` (kunci terenkripsi) · `api.py` · `.env` legacy · `sessions/` · `memory.json` · `usage.json` · `geo.json` · `caps.json` (hasil diagnosa) · `history` · `skills/` · `commands/` · `agents/` · `hooks.json` · `mcp.json` · `logs/` · `shares/` · `bg/`\n"
     write("CONFIG.md", t)
 
 

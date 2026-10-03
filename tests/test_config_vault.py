@@ -35,9 +35,11 @@ class DotEnv(unittest.TestCase):
         self.d = tempfile.mkdtemp()
         self.path = os.path.join(self.d, ".env")
         config._dotenv = None
+        config._api_file = None
 
     def tearDown(self):
         config._dotenv = None
+        config._api_file = None
 
     def write(self, text, mode=0o600):
         with open(self.path, "w", encoding="utf-8", newline="") as f:
@@ -57,6 +59,12 @@ class DotEnv(unittest.TestCase):
 
     def test_missing_file(self):
         self.assertEqual(config._parse_env(os.path.join(self.d, "tidak-ada")), {})
+
+    def test_api_file_reads_constants_only(self):
+        p = os.path.join(self.d, "api.py")
+        with open(p, "w") as f:
+            f.write('API_KEY = "sk-test"\nBASE_URL = "https://example.test/api/v1"\nraise RuntimeError("must not execute")\n')
+        self.assertEqual(config._parse_api_file(p), {"CODINX_API_KEY": "sk-test", "CODINX_BASE_URL": "https://example.test/api/v1"})
 
     def test_priority_real_env_beats_dotenv(self):
         self.write("CODINX_MODEL=dari-dotenv\nCODINX_TIER=pro\n")

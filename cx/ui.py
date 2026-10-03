@@ -34,7 +34,9 @@ def term_width():
 
 
 def banner_lines():
-    return ["CodinX"]
+    # Enam baris dipertahankan agar renderer/tema lama tetap kompatibel;
+    # banner profesional hanya memakai baris pertama.
+    return ["CodinX"] * 6
 
 
 # ----------------------------------------------------------------- markdown

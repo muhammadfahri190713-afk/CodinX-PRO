@@ -67,9 +67,9 @@ class App:
         self.ui.show_thinking = cfg.get("show_thinking", False)
         self.ui.show_details = cfg.get("show_details", True)
         T.set_theme(cfg.get("theme", "codinx"))
+        self.cwd = os.getcwd()
         self.key = config.get_key()
         self.perms = Perms(cfg)
-        self.cwd = os.getcwd()
         self.session = Session(self.cwd)
         self.ctx = tools.Ctx(self.cwd, self.perms, self.ui, self.session, cfg)
         self.ctx.mode = cfg.get("agent", "build") if cfg.get("agent") in ("build", "plan") else "build"
@@ -118,16 +118,15 @@ class App:
             return True
         self.ui.warn("Belum terhubung ke endpoint.")
         if not sys.stdin.isatty():
-            self.ui.err("Mode non-interaktif: set CODINX_API_KEY (dan CODINX_BASE_URL) lewat environment atau file .env, "
-                        "atau jalankan `codinx connect` di terminal.")
+            self.ui.err("API key belum ada: jalankan `cp api.example.py api.py`, isi API_KEY, atau set CODINX_API_KEY, lalu ulangi.")
             return False
         return self.connect_wizard()
 
     def connect_wizard(self):
         if config.env("CODINX_API_KEY") or config.env("CODINX_BASE_URL"):
-            self.ui.warn(".env / variabel lingkungan aktif dan MENIMPA pengaturan di sini. Ubah koneksi di file .env.")
+            self.ui.warn("api.py / environment aktif dan menimpa pengaturan koneksi. Edit api.py untuk mengganti key.")
         if not sys.stdin.isatty():
-            self.ui.err("`connect` butuh terminal interaktif. Non-interaktif: set CODINX_API_KEY / CODINX_BASE_URL (environment atau .env).")
+            self.ui.err("`connect` butuh terminal interaktif. Alternatif: isi API_KEY di api.py.")
             return False
         cur = self.cfg.get("base_url") or config.DEFAULT_BASE_URL
         try:

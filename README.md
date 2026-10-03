@@ -7,13 +7,13 @@ Versi 1.2.0 · lisensi MIT.
 ## Mulai cepat
 ```bash
 unzip CodinX.zip && cd CodinX
-cp .env.example .env && chmod 600 .env      # isi CODINX_API_KEY (atau letakkan file .env yang sudah jadi di folder ini)
+cp api.example.py api.py                    # isi API_KEY di api.py; file ini di-ignore Git
 npm run -s codinx-agents                    # atau: python3 bin/codinx
 # pasang permanen (perintah `codinx`):  bash install.sh
 # Termux: install.sh memakai $PREFIX secara otomatis; tanpa instalasi pun bisa: python3 bin/codinx
 ```
 Non-interaktif: `codinx run "buat web todo" --auto` · `codinx run -c "lanjutkan"` · `codinx run "/skill debug-fix error x"` · `--format json`.
-Endpoint bawaan `https://inttelix.vercel.app/api/v1`; ganti dengan `/connect` atau lewat `.env`. Semua variabel: [docs/CONFIG.md](docs/CONFIG.md).
+Endpoint bawaan `https://inttelix.vercel.app/api/v1`; API key dibaca dari `api.py` lokal. `.env` tetap didukung untuk kompatibilitas lama. Semua variabel: [docs/CONFIG.md](docs/CONFIG.md).
 
 ## Masa uji coba: semua model gratis
 Selama uji coba (`trial_mode`, **bawaan aktif**) seluruh **170 model** terbuka tanpa kunci paket dan **Dinar tidak dipotong**.

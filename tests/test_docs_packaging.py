@@ -99,7 +99,7 @@ class RepoHygiene(unittest.TestCase):
                   "Dockerfile", ".editorconfig", ".github/workflows/ci.yml", ".github/PULL_REQUEST_TEMPLATE.md",
                   "completions/codinx.bash", "completions/_codinx", "install.sh", "uninstall.sh", "package.json", "bin/codinx",
                   "scripts/build_zip.py", "scripts/vendor_pygments.py", "scripts/gen_docs.py", "scripts/secret_scan.py",
-                  "scripts/install-git-hooks.sh", "scripts/pre-commit", "data/models.json", "examples/mcp-echo-server.py"):
+                  "scripts/install-git-hooks.sh", "data/models.json", "api.example.py", "examples/mcp-echo-server.py"):
             self.assertTrue(os.path.exists(os.path.join(ROOT, f)), f)
 
     def test_executables_have_exec_bit_and_shebang(self):

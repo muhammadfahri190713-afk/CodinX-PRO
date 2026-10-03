@@ -1,4 +1,5 @@
 import copy
+import ast
 import json
 import os
 import re
@@ -45,11 +46,11 @@ DEFAULTS = {
 }
 
 
-# ---------------------------------------------------------------- .env support
-# Dibaca (hanya variabel berawalan CODINX_): ~/.codinx/.env, folder instalasi,
-# lalu folder kerja aktif (yang paling akhir menang). Ini memudahkan Termux/Acode.
-# Prioritas: variabel lingkungan nyata > .env > brankas/config.json.
+# ---------------------------------------------------------------- local connection files
+# api.py dibaca sebagai konstanta teks (tidak pernah di-import/eksekusi). .env tetap
+# didukung sebagai fallback legacy. Prioritas: environment > api.py > .env > brankas.
 _dotenv = None
+_api_file = None
 
 
 def _parse_env(path):
@@ -77,9 +78,49 @@ def _parse_env(path):
     return out
 
 
+def _parse_api_file(path):
+    """Baca konstanta API_KEY/BASE_URL dari api.py tanpa mengimpor/mengeksekusi file."""
+    out = {}
+    try:
+        with open(path, encoding="utf-8") as f:
+            tree = ast.parse(f.read(), filename=path)
+    except (OSError, SyntaxError, UnicodeError):
+        return out
+    for node in tree.body:
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1 or not isinstance(node.targets[0], ast.Name):
+            continue
+        name = node.targets[0].id
+        if name not in ("API_KEY", "CODINX_API_KEY", "BASE_URL", "CODINX_BASE_URL"):
+            continue
+        if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+            out["CODINX_API_KEY" if name in ("API_KEY", "CODINX_API_KEY") else "CODINX_BASE_URL"] = node.value.value.strip()
+    return out
+
+
 def env_paths():
     paths = [os.path.join(HOME, ".env"), os.path.join(ROOT, ".env"), os.path.join(os.getcwd(), ".env")]
     return list(dict.fromkeys(paths))
+
+
+def api_paths():
+    paths = [os.path.join(HOME, "api.py"), os.path.join(ROOT, "api.py"), os.path.join(os.getcwd(), "api.py")]
+    return list(dict.fromkeys(paths))
+
+
+def api_file():
+    global _api_file
+    if _api_file is None:
+        data = {}
+        for p in api_paths():
+            if os.path.isfile(p):
+                try:
+                    if os.stat(p).st_mode & 0o077:
+                        os.chmod(p, 0o600)
+                except OSError:
+                    pass
+                data.update(_parse_api_file(p))
+        _api_file = data
+    return _api_file
 
 
 def dotenv():
@@ -99,12 +140,14 @@ def dotenv():
 
 
 def env(name):
-    return os.environ.get(name) or dotenv().get(name) or ""
+    return os.environ.get(name) or api_file().get(name) or dotenv().get(name) or ""
 
 
 def key_source():
     if os.environ.get("CODINX_API_KEY"):
         return "variabel lingkungan"
+    if api_file().get("CODINX_API_KEY"):
+        return "api.py"
     if dotenv().get("CODINX_API_KEY"):
         return ".env"
     return "brankas terenkripsi" if get_key() else "(belum ada)"

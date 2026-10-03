@@ -2,7 +2,7 @@
 
 > Dihasilkan otomatis dari kode oleh `scripts/gen_docs.py`.
 
-Prioritas: **variabel lingkungan nyata > `.env` > brankas/`config.json`** (untuk koneksi); `<proyek>/.codinx/config.json` hanya boleh mengubah: `agent`, `context_limit`, `history_mode`, `max_steps`, `model`, `show_details`, `show_thinking`, `temperature`, `theme`, `tool_mode`.
+Prioritas: **variabel lingkungan nyata > `api.py` > `.env` legacy > brankas/`config.json`** (untuk koneksi); `<proyek>/.codinx/config.json` hanya boleh mengubah: `agent`, `context_limit`, `history_mode`, `max_steps`, `model`, `show_details`, `show_thinking`, `temperature`, `theme`, `tool_mode`.
 
 ## `~/.codinx/config.json`
 
@@ -31,10 +31,14 @@ Prioritas: **variabel lingkungan nyata > `.env` > brankas/`config.json`** (untuk
 | `insecure_tls` | `False` | Lewati verifikasi sertifikat TLS (hanya untuk proxy lokal bersertifikat sendiri). |
 | `permission` | `{}` | Aturan pola lanjutan per tool (lihat docs/PERMISSIONS.md). |
 
-## Variabel lingkungan / `.env` (hanya awalan `CODINX_`)
+## `api.py` (koneksi lokal)
+
+Salin `api.example.py` menjadi `api.py`, lalu isi `API_KEY`. File ini hanya dibaca sebagai konstanta teks, diberi mode 600, dan masuk `.gitignore`; jangan pernah commit API key ke repository publik. `BASE_URL` opsional, default: `https://inttelix.vercel.app/api/v1`.
+
+## Variabel lingkungan / `.env` legacy (hanya awalan `CODINX_`)
 
 | Variabel | Menentukan |
-|---|---|
+|---|---|---
 | `CODINX_BASE_URL` | base_url |
 | `CODINX_API_KEY` | (rahasia; tidak pernah disimpan ke config.json) |
 | `CODINX_MODEL` | model |
@@ -49,4 +53,4 @@ Prioritas: **variabel lingkungan nyata > `.env` > brankas/`config.json`** (untuk
 
 ## File data di `~/.codinx/`
 
-`config.json` · `.key.enc` (kunci terenkripsi) · `.env` · `sessions/` · `memory.json` · `usage.json` · `geo.json` · `caps.json` (hasil diagnosa) · `history` · `skills/` · `commands/` · `agents/` · `hooks.json` · `mcp.json` · `logs/` · `shares/` · `bg/`
+`config.json` · `.key.enc` (kunci terenkripsi) · `api.py` · `.env` legacy · `sessions/` · `memory.json` · `usage.json` · `geo.json` · `caps.json` (hasil diagnosa) · `history` · `skills/` · `commands/` · `agents/` · `hooks.json` · `mcp.json` · `logs/` · `shares/` · `bg/`
