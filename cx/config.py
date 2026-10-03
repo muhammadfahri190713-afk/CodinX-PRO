@@ -46,7 +46,8 @@ DEFAULTS = {
 
 
 # ---------------------------------------------------------------- .env support
-# Dibaca (hanya variabel berawalan CODINX_): ~/.codinx/.env lalu <folder CodinX>/.env (yang kedua menang).
+# Dibaca (hanya variabel berawalan CODINX_): ~/.codinx/.env, folder instalasi,
+# lalu folder kerja aktif (yang paling akhir menang). Ini memudahkan Termux/Acode.
 # Prioritas: variabel lingkungan nyata > .env > brankas/config.json.
 _dotenv = None
 
@@ -77,7 +78,8 @@ def _parse_env(path):
 
 
 def env_paths():
-    return [os.path.join(HOME, ".env"), os.path.join(ROOT, ".env")]
+    paths = [os.path.join(HOME, ".env"), os.path.join(ROOT, ".env"), os.path.join(os.getcwd(), ".env")]
+    return list(dict.fromkeys(paths))
 
 
 def dotenv():
